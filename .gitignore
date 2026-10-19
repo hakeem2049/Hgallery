@@ -1,0 +1,6 @@
+node_modules/
+setup-code.txt
+*recovery*
+*.env
+.env*
+*backup*.json

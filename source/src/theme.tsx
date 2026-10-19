@@ -1,0 +1,4 @@
+import {useEffect,useState} from 'react';
+import {Sun,Moon,Palette} from 'lucide-react';
+const themes=[{id:'light',name:'فاتح',Icon:Sun},{id:'dark',name:'داكن',Icon:Moon},{id:'colorful',name:'ألوان',Icon:Palette}];
+export default function ThemePicker(){const [theme,T]=useState(()=>{try{const t=localStorage.getItem('hakim-ui-theme');return themes.some(x=>x.id===t)?t!:'colorful'}catch{return 'colorful'}});useEffect(()=>{document.documentElement.dataset.theme=theme;try{localStorage.setItem('hakim-ui-theme',theme)}catch{}},[theme]);return <div className="theme-picker" role="group" aria-label="اختيار مظهر البرنامج">{themes.map(({id,name,Icon})=><button key={id} className={theme===id?'selected':''} aria-pressed={theme===id} title={name} onClick={()=>T(id)}><Icon size={16}/><span>{name}</span></button>)}</div>}
