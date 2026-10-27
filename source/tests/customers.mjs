@@ -17,3 +17,8 @@ assert.equal(result.customers[0].isWholesale,false);assert.deepEqual(result.entr
 assert.throws(()=>mutate(structuredClone(state),{action:'edit',data:{collection:'customers',id:'w',name:'test',isWholesale:true}},{...admin,role:'cashier'}));
 assert.equal(mutate(structuredClone(state),{action:'customers',data:{name:'جملة جديد',isWholesale:true}},admin).customers.at(-1).isWholesale,true);
 console.log('Customer tests passed: balances, combined filters, paid pending orders, settled and new customers, credit, classification persistence and admin permissions.');
+const {sortCustomers,latestCustomerInvoice}=await load('src/customer-filters.ts');
+const sortable=[{id:'1',name:'ب',phone:'0102',balance:100,pending:2},{id:'2',name:'أ',phone:'01010',balance:-10,pending:0}];
+assert.deepEqual(sortCustomers(sortable,'balance','asc').map(c=>c.id),['2','1']);assert.deepEqual(sortCustomers(sortable,'balance','desc').map(c=>c.id),['1','2']);assert.deepEqual(sortCustomers(sortable,'phone','asc').map(c=>c.id),['1','2']);assert.deepEqual(sortCustomers(sortable,'pending','desc').map(c=>c.id),['1','2']);assert.deepEqual(sortCustomers(sortable,'name','asc').map(c=>c.id),['2','1']);
+assert.equal(latestCustomerInvoice([{id:'a',person:'1',kind:'sale',at:'2026-10-26'},{id:'b',person:'1',kind:'receipt',at:'2026-10-28'},{id:'c',person:'2',kind:'sale',at:'2026-10-29'},{id:'d',person:'1',kind:'sale',at:'2026-10-27'}],'1').id,'d');assert.equal(latestCustomerInvoice([], '1'),null);
+console.log('Sorting and last-invoice tests passed.');
