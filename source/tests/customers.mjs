@@ -1,0 +1,14 @@
+import {build} from 'esbuild';
+import assert from 'node:assert/strict';
+const load=async path=>{const b=await build({entryPoints:[path],bundle:true,write:false,platform:'node',format:'esm'});return import('data:text/javascript;base64,'+Buffer.from(b.outputFiles[0].text).toString('base64'))};
+const {customerSummaries,matchesCustomer}=await load('src/customer-filters.ts');
+const {mutate}=await load('server/core.ts');
+const state={customers:[{id:'w',name:'جملة',isWholesale:true,opening:10},{id:'p',name:'قيد التجهيز'},{id:'s',name:'خالص'},{id:'n',name:'جديد'},{id:'r',name:'رصيد'}],employees:[],products:[],closes:[],audit:[],entries:[{id:'e1',person:'w',kind:'sale',amount:100,cash:20,insta:10,vodafone:0},{id:'e2',person:'w',kind:'receipt',amount:30},{id:'e3',person:'p',kind:'sale',amount:100,cash:100},{id:'e4',person:'s',kind:'sale',amount:50,cash:50},{id:'e5',person:'r',kind:'receipt',amount:20}],orders:[{id:'o1',person:'p',status:'ready'},{id:'o2',person:'s',status:'delivered'}]};
+const c=customerSummaries(state);const ids=v=>c.filter(x=>matchesCustomer(x,v)).map(x=>x.id);
+assert.equal(c[0].balance,50);assert.deepEqual(ids('active'),['w','p','r']);assert.deepEqual(ids('wholesaleDebt'),['w']);assert.deepEqual(ids('pending'),['p']);assert.deepEqual(ids('settled'),['s']);assert.deepEqual(ids('new'),['n']);assert.deepEqual(ids('credit'),['r']);assert.equal(c[1].ready,1);
+const admin={role:'admin',username:'a',name:'Admin',id:'a'};
+const result=mutate(structuredClone(state),{action:'edit',data:{collection:'customers',id:'w',name:'جملة',opening:10,isWholesale:false}},admin);
+assert.equal(result.customers[0].isWholesale,false);assert.deepEqual(result.entries,state.entries);assert.deepEqual(result.orders,state.orders);
+assert.throws(()=>mutate(structuredClone(state),{action:'edit',data:{collection:'customers',id:'w',name:'test',isWholesale:true}},{...admin,role:'cashier'}));
+assert.equal(mutate(structuredClone(state),{action:'customers',data:{name:'جملة جديد',isWholesale:true}},admin).customers.at(-1).isWholesale,true);
+console.log('Customer tests passed: balances, combined filters, paid pending orders, settled and new customers, credit, classification persistence and admin permissions.');
