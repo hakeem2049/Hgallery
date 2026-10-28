@@ -10,7 +10,7 @@ const fmt=formatNumber;
 const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Cairo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 
 export function customerSearchText(value:string){return String(value||'').normalize('NFKC').toLowerCase().replace(/[أإآٱ]/g,'ا').replace(/[ى]/g,'ي').replace(/[\u064B-\u065F\u0670ـ]/g,'').replace(/[٠-٩]/g,c=>String(c.charCodeAt(0)-1632)).replace(/[۰-۹]/g,c=>String(c.charCodeAt(0)-1776)).replace(/[\s()+-]/g,'');}
-export function CustomerPicker({customers,value,onChange}:{customers:any[];value:string;onChange:(id:string)=>void}){
+export function CustomerPicker({customers,value,onChange,emptyLabel="＋ عميل جديد"}:{customers:any[];value:string;onChange:(id:string)=>void;emptyLabel?:string}){
  const [query,Q]=useState(''),[open,O]=useState(false);
  const selected=customers.find(c=>c.id===value),term=customerSearchText(query);
  const matches=term?customers.filter(c=>customerSearchText(c.name).includes(term)||customerSearchText(c.phone).includes(term)):[];
@@ -20,7 +20,7 @@ export function CustomerPicker({customers,value,onChange}:{customers:any[];value
  {selected&&<div className="success" style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><span>{selected.name} · {selected.phone}</span><button type="button" className="text" onClick={()=>{onChange('');Q('');O(true)}}>تغيير العميل</button></div>}
  <input id="order-customer-search" autoComplete="off" placeholder="اكتب أول حرف من الاسم أو أي جزء من الرقم…" value={query} aria-expanded={open&&!!term} aria-controls="order-customer-results" onFocus={()=>O(true)} onChange={e=>{Q(e.target.value);O(true)}} onKeyDown={e=>{if(e.key==='Escape')O(false);if(e.key==='Enter'){e.preventDefault();if(open&&matches.length===1)choose(matches[0].id)}}}/>
  {open&&term&&<div id="order-customer-results" style={{maxHeight:260,overflowY:'auto',border:'1px solid #dce3e6',borderRadius:9,padding:6,background:'var(--panel-bg, #fff)',color:'#253942'}}><small role="status">{matches.length?`${matches.length} عميل مطابق — اختار العميل`:'مفيش عميل مطابق'}</small>{matches.map(c=><button key={c.id} type="button" className="secondary" style={{display:'flex',width:'100%',justifyContent:'space-between',marginTop:5,textAlign:'right'}} onClick={()=>choose(c.id)}><strong>{c.name}</strong><span dir="ltr">{c.phone}</span></button>)}</div>}
- <button type="button" className="text" onClick={()=>choose('')}>＋ عميل جديد</button>
+ <button type="button" className="text" onClick={()=>choose('')}>{emptyLabel}</button>
  </div>;
 }
 
